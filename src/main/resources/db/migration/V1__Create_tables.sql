@@ -9,12 +9,10 @@ CREATE TABLE participants (
 );
 
 -- 게임 테이블
-CREATE TYPE game_status AS ENUM ('IN_PROGRESS', 'COMPLETED');
-
 CREATE TABLE games (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(200) NOT NULL,
-    status game_status DEFAULT 'IN_PROGRESS',
+    status VARCHAR(20) DEFAULT 'IN_PROGRESS' CHECK (status IN ('IN_PROGRESS', 'COMPLETED')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -52,13 +50,11 @@ CREATE TABLE payments (
 );
 
 -- 여행 정산 테이블
-CREATE TYPE settlement_status AS ENUM ('IN_PROGRESS', 'COMPLETED');
-
 CREATE TABLE travel_settlements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(200) NOT NULL,
     total_amount DECIMAL(10,2) NOT NULL CHECK (total_amount >= 0),
-    status settlement_status DEFAULT 'IN_PROGRESS',
+    status VARCHAR(20) DEFAULT 'IN_PROGRESS' CHECK (status IN ('IN_PROGRESS', 'COMPLETED')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP
 );
