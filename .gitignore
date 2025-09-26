@@ -42,6 +42,10 @@ out/
 .env.development
 .env.test
 .env.production
+env/.env.local
+env/.env.development
+env/.env.test
+env/.env.production
 
 ### Logs ###
 logs/

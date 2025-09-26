@@ -64,11 +64,11 @@
 
 ### 2. 환경 변수 설정
 ```bash
-# .env 파일을 복사하고 설정을 수정하세요
-cp env.example .env
+# 환경별 설정 파일을 복사하고 설정을 수정하세요
+cp env/.env.example env/.env.local
 
-# .env 파일 편집 (데이터베이스 정보 등)
-nano .env
+# 환경별 .env 파일 편집 (데이터베이스 정보 등)
+nano env/.env.local
 ```
 
 ### 3. 데이터베이스 설정
@@ -83,8 +83,18 @@ GRANT ALL PRIVILEGES ON DATABASE testdb TO admin;
 # 의존성 설치
 ./gradlew build
 
-# 애플리케이션 실행
-./gradlew bootRun
+# 환경별 애플리케이션 실행
+# 로컬 환경
+./gradlew bootRun --args='--spring.profiles.active=local'
+
+# 개발 환경
+./gradlew bootRun --args='--spring.profiles.active=development'
+
+# 프로덕션 환경
+./gradlew bootRun --args='--spring.profiles.active=production'
+
+# 테스트 환경
+./gradlew bootRun --args='--spring.profiles.active=test'
 ```
 
 ### 4. API 문서 확인
@@ -135,7 +145,17 @@ GRANT ALL PRIVILEGES ON DATABASE testdb TO admin;
 
 ## 🔧 설정
 
-### 환경 변수 설정 (.env)
+### 환경별 설정 파일 구조
+```
+env/
+├── .env.example          # 환경 변수 템플릿 (Git에 포함)
+├── .env.local           # 로컬 환경 (Git에서 제외)
+├── .env.development     # 개발 환경 (Git에서 제외)
+├── .env.test           # 테스트 환경 (Git에서 제외)
+└── .env.production     # 프로덕션 환경 (Git에서 제외)
+```
+
+### 환경 변수 설정 예시 (env/.env.local)
 ```bash
 # 데이터베이스 설정
 DB_HOST=localhost
