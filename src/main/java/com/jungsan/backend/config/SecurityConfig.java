@@ -29,16 +29,14 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/participants/**").permitAll()
-                .requestMatchers("/api/games/**").permitAll()
-                .requestMatchers("/api/rounds/**").permitAll()
-                .requestMatchers("/api/payments/**").permitAll()
-                .requestMatchers("/api/travel-settlements/**").permitAll()
-                .requestMatchers("/api/swagger-ui/**").permitAll()
-                .requestMatchers("/api/api-docs/**").permitAll()
-                .requestMatchers("/api/actuator/**").permitAll()
-                .anyRequest().authenticated()
-            );
+                .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .anyRequest().permitAll()
+            )
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable);
 
         return http.build();
     }

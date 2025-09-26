@@ -7,7 +7,7 @@ import com.jungsan.backend.entity.GameParticipant;
 import com.jungsan.backend.entity.Participant;
 import com.jungsan.backend.exception.BusinessException;
 import com.jungsan.backend.exception.ResourceNotFoundException;
-import com.jungsan.backend.mapper.GameMapper;
+// import com.jungsan.backend.mapper.GameMapper;
 import com.jungsan.backend.repository.GameParticipantRepository;
 import com.jungsan.backend.repository.GameRepository;
 import com.jungsan.backend.repository.ParticipantRepository;
@@ -27,32 +27,39 @@ public class GameService {
     private final GameRepository gameRepository;
     private final GameParticipantRepository gameParticipantRepository;
     private final ParticipantRepository participantRepository;
-    private final GameMapper gameMapper;
+    // private final GameMapper gameMapper;
 
     private static final int MIN_PARTICIPANTS = 2;
     private static final int MAX_PARTICIPANTS = 10;
 
     public List<GameDto.Response> getAllGames() {
         List<Game> games = gameRepository.findAll();
-        return gameMapper.toResponseList(games);
+        return games.stream()
+                .map(this::mapGameToResponse)
+                .toList();
     }
 
     public List<GameDto.Response> getGamesByStatus(Game.GameStatus status) {
         List<Game> games = gameRepository.findByStatusOrderByCreatedAtDesc(status);
-        return gameMapper.toResponseList(games);
+        return games.stream()
+                .map(this::mapGameToResponse)
+                .toList();
     }
 
     public GameDto.Response getGameById(UUID id) {
         Game game = gameRepository.findByIdWithParticipants(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Game", "id", id));
-        return gameMapper.toResponse(game);
+        return mapGameToResponse(game);
     }
 
     @Transactional
     public GameDto.Response createGame(GameDto.Create dto) {
-        Game game = gameMapper.toEntity(dto);
+        Game game = Game.builder()
+                .title(dto.getTitle())
+                .status(Game.GameStatus.IN_PROGRESS)
+                .build();
         Game savedGame = gameRepository.save(game);
-        return gameMapper.toResponse(savedGame);
+        return mapGameToResponse(savedGame);
     }
 
     @Transactional
@@ -60,14 +67,19 @@ public class GameService {
         Game game = gameRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Game", "id", id));
         
-        gameMapper.updateEntity(dto, game);
-        
-        if (dto.getStatus() == Game.GameStatus.COMPLETED && game.getCompletedAt() == null) {
-            game.setCompletedAt(LocalDateTime.now());
+        // MapStruct 대신 수동 매핑
+        if (dto.getTitle() != null) {
+            game.setTitle(dto.getTitle());
+        }
+        if (dto.getStatus() != null) {
+            game.setStatus(dto.getStatus());
+            if (dto.getStatus() == Game.GameStatus.COMPLETED && game.getCompletedAt() == null) {
+                game.setCompletedAt(LocalDateTime.now());
+            }
         }
         
         Game savedGame = gameRepository.save(game);
-        return gameMapper.toResponse(savedGame);
+        return mapGameToResponse(savedGame);
     }
 
     @Transactional
@@ -104,7 +116,7 @@ public class GameService {
         
         Game updatedGame = gameRepository.findByIdWithParticipants(gameId)
                 .orElseThrow(() -> new ResourceNotFoundException("Game", "id", gameId));
-        return gameMapper.toResponse(updatedGame);
+        return mapGameToResponse(updatedGame);
     }
 
     @Transactional
@@ -121,7 +133,7 @@ public class GameService {
         
         Game updatedGame = gameRepository.findByIdWithParticipants(gameId)
                 .orElseThrow(() -> new ResourceNotFoundException("Game", "id", gameId));
-        return gameMapper.toResponse(updatedGame);
+        return mapGameToResponse(updatedGame);
     }
 
     public List<ParticipantDto.Simple> getGameParticipants(UUID gameId) {
@@ -133,5 +145,16 @@ public class GameService {
                         .avatar(gp.getParticipant().getAvatar())
                         .build())
                 .toList();
+    }
+
+    private GameDto.Response mapGameToResponse(Game game) {
+        return GameDto.Response.builder()
+                .id(game.getId())
+                .title(game.getTitle())
+                .status(game.getStatus())
+                .createdAt(game.getCreatedAt())
+                .completedAt(game.getCompletedAt())
+                .updatedAt(game.getUpdatedAt())
+                .build();
     }
 }
