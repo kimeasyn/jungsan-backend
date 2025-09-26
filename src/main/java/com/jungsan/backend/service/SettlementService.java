@@ -57,31 +57,40 @@ public class SettlementService {
             BigDecimal amount = payment.getAmount();
             
             // 지급자 잔액 업데이트 (지급한 금액 증가)
-            balances.computeIfAbsent(payerId, id -> createParticipantBalance(payment.getPayer()))
-                    .setTotalPaid(balances.get(payerId).getTotalPaid().add(amount));
+            SettlementDto.ParticipantBalance payerBalance = balances.computeIfAbsent(payerId, id -> createParticipantBalance(payment.getPayer()));
+            payerBalance.setTotalPaid(payerBalance.getTotalPaid().add(amount));
             
             // 수령자 잔액 업데이트 (받은 금액 증가)
-            balances.computeIfAbsent(recipientId, id -> createParticipantBalance(payment.getRecipient()))
-                    .setTotalReceived(balances.get(recipientId).getTotalReceived().add(amount));
+            SettlementDto.ParticipantBalance recipientBalance = balances.computeIfAbsent(recipientId, id -> createParticipantBalance(payment.getRecipient()));
+            recipientBalance.setTotalReceived(recipientBalance.getTotalReceived().add(amount));
         }
         
         // 최종 잔액 계산 (받은 금액 - 지급한 금액)
+        Map<UUID, SettlementDto.ParticipantBalance> finalBalances = new HashMap<>();
         for (SettlementDto.ParticipantBalance balance : balances.values()) {
             BigDecimal finalBalance = balance.getTotalReceived().subtract(balance.getTotalPaid());
-            balance.setBalance(finalBalance);
+            
+            SettlementDto.ParticipantBalance newBalance = new SettlementDto.ParticipantBalance(
+                    balance.getParticipantId(),
+                    balance.getParticipantName(),
+                    balance.getTotalPaid(),
+                    balance.getTotalReceived(),
+                    finalBalance
+            );
+            finalBalances.put(balance.getParticipantId(), newBalance);
         }
         
-        return balances;
+        return finalBalances;
     }
 
     private SettlementDto.ParticipantBalance createParticipantBalance(Participant participant) {
-        return SettlementDto.ParticipantBalance.builder()
-                .participantId(participant.getId())
-                .participantName(participant.getName())
-                .totalPaid(BigDecimal.ZERO)
-                .totalReceived(BigDecimal.ZERO)
-                .balance(BigDecimal.ZERO)
-                .build();
+        return new SettlementDto.ParticipantBalance(
+                participant.getId(),
+                participant.getName(),
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO
+        );
     }
 
     private List<SettlementDto.SettlementTransaction> optimizeSettlementTransactions(

@@ -11,16 +11,38 @@ import java.util.UUID;
 
 public class SettlementDto {
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class ParticipantBalance {
         private UUID participantId;
         private String participantName;
-        private BigDecimal totalPaid;
-        private BigDecimal totalReceived;
-        private BigDecimal balance; // 받은 금액 - 지급한 금액
+        private BigDecimal totalPaid = BigDecimal.ZERO;
+        private BigDecimal totalReceived = BigDecimal.ZERO;
+        private BigDecimal balance = BigDecimal.ZERO; // 받은 금액 - 지급한 금액
+        
+        public ParticipantBalance() {}
+        
+        public ParticipantBalance(UUID participantId, String participantName, BigDecimal totalPaid, BigDecimal totalReceived, BigDecimal balance) {
+            this.participantId = participantId;
+            this.participantName = participantName;
+            this.totalPaid = totalPaid;
+            this.totalReceived = totalReceived;
+            this.balance = balance;
+        }
+        
+        // Getters and Setters
+        public UUID getParticipantId() { return participantId; }
+        public void setParticipantId(UUID participantId) { this.participantId = participantId; }
+        
+        public String getParticipantName() { return participantName; }
+        public void setParticipantName(String participantName) { this.participantName = participantName; }
+        
+        public BigDecimal getTotalPaid() { return totalPaid; }
+        public void setTotalPaid(BigDecimal totalPaid) { this.totalPaid = totalPaid; }
+        
+        public BigDecimal getTotalReceived() { return totalReceived; }
+        public void setTotalReceived(BigDecimal totalReceived) { this.totalReceived = totalReceived; }
+        
+        public BigDecimal getBalance() { return balance; }
+        public void setBalance(BigDecimal balance) { this.balance = balance; }
     }
 
     @Data

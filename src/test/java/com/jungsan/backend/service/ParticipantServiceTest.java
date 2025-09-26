@@ -2,6 +2,7 @@ package com.jungsan.backend.service;
 
 import com.jungsan.backend.dto.ParticipantDto;
 import com.jungsan.backend.entity.Participant;
+import com.jungsan.backend.mapper.ParticipantMapper;
 import com.jungsan.backend.repository.ParticipantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,9 @@ class ParticipantServiceTest {
 
     @Mock
     private ParticipantRepository participantRepository;
+
+    @Mock
+    private ParticipantMapper participantMapper;
 
     @InjectMocks
     private ParticipantService participantService;
@@ -55,7 +59,15 @@ class ParticipantServiceTest {
     @Test
     void getAllParticipants_ShouldReturnAllActiveParticipants() {
         // Given
+        ParticipantDto.Response responseDto = ParticipantDto.Response.builder()
+                .id(participant.getId())
+                .name(participant.getName())
+                .avatar(participant.getAvatar())
+                .isActive(participant.getIsActive())
+                .build();
+        
         when(participantRepository.findByIsActiveTrueOrderByName()).thenReturn(List.of(participant));
+        when(participantMapper.toResponseList(List.of(participant))).thenReturn(List.of(responseDto));
 
         // When
         List<ParticipantDto.Response> result = participantService.getAllParticipants();
@@ -64,13 +76,22 @@ class ParticipantServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).isEqualTo("테스트 참가자");
         verify(participantRepository).findByIsActiveTrueOrderByName();
+        verify(participantMapper).toResponseList(List.of(participant));
     }
 
     @Test
     void getParticipantById_ShouldReturnParticipant() {
         // Given
         UUID id = participant.getId();
+        ParticipantDto.Response responseDto = ParticipantDto.Response.builder()
+                .id(participant.getId())
+                .name(participant.getName())
+                .avatar(participant.getAvatar())
+                .isActive(participant.getIsActive())
+                .build();
+        
         when(participantRepository.findByIdAndIsActiveTrue(id)).thenReturn(Optional.of(participant));
+        when(participantMapper.toResponse(participant)).thenReturn(responseDto);
 
         // When
         ParticipantDto.Response result = participantService.getParticipantById(id);
@@ -79,27 +100,47 @@ class ParticipantServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo("테스트 참가자");
         verify(participantRepository).findByIdAndIsActiveTrue(id);
+        verify(participantMapper).toResponse(participant);
     }
 
     @Test
     void createParticipant_ShouldCreateAndReturnParticipant() {
         // Given
+        ParticipantDto.Response responseDto = ParticipantDto.Response.builder()
+                .id(participant.getId())
+                .name(participant.getName())
+                .avatar(participant.getAvatar())
+                .isActive(participant.getIsActive())
+                .build();
+        
+        when(participantMapper.toEntity(createDto)).thenReturn(participant);
         when(participantRepository.save(any(Participant.class))).thenReturn(participant);
+        when(participantMapper.toResponse(participant)).thenReturn(responseDto);
 
         // When
         ParticipantDto.Response result = participantService.createParticipant(createDto);
 
         // Then
         assertThat(result).isNotNull();
+        verify(participantMapper).toEntity(createDto);
         verify(participantRepository).save(any(Participant.class));
+        verify(participantMapper).toResponse(participant);
     }
 
     @Test
     void updateParticipant_ShouldUpdateAndReturnParticipant() {
         // Given
         UUID id = participant.getId();
+        ParticipantDto.Response responseDto = ParticipantDto.Response.builder()
+                .id(participant.getId())
+                .name(participant.getName())
+                .avatar(participant.getAvatar())
+                .isActive(participant.getIsActive())
+                .build();
+        
         when(participantRepository.findByIdAndIsActiveTrue(id)).thenReturn(Optional.of(participant));
         when(participantRepository.save(any(Participant.class))).thenReturn(participant);
+        when(participantMapper.toResponse(participant)).thenReturn(responseDto);
 
         // When
         ParticipantDto.Response result = participantService.updateParticipant(id, updateDto);
@@ -107,7 +148,9 @@ class ParticipantServiceTest {
         // Then
         assertThat(result).isNotNull();
         verify(participantRepository).findByIdAndIsActiveTrue(id);
+        verify(participantMapper).updateEntity(updateDto, participant);
         verify(participantRepository).save(any(Participant.class));
+        verify(participantMapper).toResponse(participant);
     }
 
     @Test
