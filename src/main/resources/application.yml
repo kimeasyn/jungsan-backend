@@ -3,9 +3,9 @@ spring:
     name: jungsan-backend
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/jungsan_db
-    username: jungsan_user
-    password: jungsan_password
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:testdb}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
   
   jpa:
@@ -25,13 +25,13 @@ spring:
   
   security:
     jwt:
-      secret: jungsan-secret-key-for-jwt-token-generation-2024
-      expiration: 86400000 # 24 hours
+      secret: ${JWT_SECRET:jungsan-secret-key-for-jwt-token-generation-2024}
+      expiration: ${JWT_EXPIRATION:86400000} # 24 hours
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   servlet:
-    context-path: /api
+    context-path: ${SERVER_CONTEXT_PATH:/api}
 
 management:
   endpoints:
@@ -44,9 +44,10 @@ management:
 
 logging:
   level:
-    com.jungsan.backend: DEBUG
+    root: ${LOG_LEVEL_ROOT:INFO}
+    com.jungsan.backend: ${LOG_LEVEL_APP:DEBUG}
     org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: ${LOG_LEVEL_SQL:DEBUG}
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 springdoc:

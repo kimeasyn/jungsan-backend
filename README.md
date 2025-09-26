@@ -62,14 +62,23 @@
 - PostgreSQL 12 이상
 - Gradle 8.5 이상
 
-### 2. 데이터베이스 설정
-```sql
-CREATE DATABASE jungsan_db;
-CREATE USER jungsan_user WITH PASSWORD 'jungsan_password';
-GRANT ALL PRIVILEGES ON DATABASE jungsan_db TO jungsan_user;
+### 2. 환경 변수 설정
+```bash
+# .env 파일을 복사하고 설정을 수정하세요
+cp env.example .env
+
+# .env 파일 편집 (데이터베이스 정보 등)
+nano .env
 ```
 
-### 3. 애플리케이션 실행
+### 3. 데이터베이스 설정
+```sql
+CREATE DATABASE testdb;
+CREATE USER admin WITH PASSWORD 'admin';
+GRANT ALL PRIVILEGES ON DATABASE testdb TO admin;
+```
+
+### 4. 애플리케이션 실행
 ```bash
 # 의존성 설치
 ./gradlew build
@@ -126,13 +135,36 @@ GRANT ALL PRIVILEGES ON DATABASE jungsan_db TO jungsan_user;
 
 ## 🔧 설정
 
+### 환경 변수 설정 (.env)
+```bash
+# 데이터베이스 설정
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=testdb
+DB_USERNAME=admin
+DB_PASSWORD=admin
+
+# JWT 설정
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRATION=86400000
+
+# 서버 설정
+SERVER_PORT=8080
+SERVER_CONTEXT_PATH=/api
+
+# 로깅 설정
+LOG_LEVEL_ROOT=INFO
+LOG_LEVEL_APP=DEBUG
+LOG_LEVEL_SQL=DEBUG
+```
+
 ### application.yml
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/jungsan_db
-    username: jungsan_user
-    password: jungsan_password
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:testdb}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
   
   jpa:
     hibernate:
